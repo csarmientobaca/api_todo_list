@@ -1,96 +1,37 @@
+require("dotenv").config();
+const mongoose = require("mongoose");
 const express = require("express")
 const cors = require("cors")
 const bodyParser = require("body-parser")
-
 const app = express()
+const todoRoutes = require("./routes/todoRoutes");
 
-const PORT = 5000
+//swagger docs
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("./swagger.json");
 
 app.use(cors()); 
 app.use(bodyParser.json());
 
-let todos = 
-    [
-        { 
-        id: 1, 
-        title: "Sample Task", 
-        completed: false },
-        { 
-        id: 2, 
-        title: "Sample Task2", 
-        completed: true }
-    
-    ]
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-//ALL
-app.get("/todos", (req, res) => {
-    res.json(todos);
-});
-
-//get
-app.get("/todos/:id", (req, res) => {
-    const{ id } = req.params
-    if (!id) {
-        return res.status(400).json({ error: "ID ist  required" })
+const connectDB = async () => {
+    try {
+        await mongoose.connect(
+            `mongodb+srv://${process.env.USERNAME_MONGO}:${process.env.PASS_MONGO}@todoapp.eo7ud.mongodb.net/${process.env.DB}?retryWrites=true&w=majority&appName=todoApp`
+        );
+        console.log("Connected to MongoDB Atlas!");
+    } catch (error) {
+        console.error("MongoDB connection error:", error);
+        process.exit(1); // exit
     }
-    const todo = todos.find((todo) => todo.id === parseInt(id))
-    if(!todo){
-        return res.status(404).json ({ error: "not found"})
-    }
-    res.status(200).json(todo)
+};
+connectDB();
 
-
-});
-
-
-
-//POST CREATE
-app.post("/todos", (req, res) => {
-    const { title } = req.body
-    if (!title) {
-        return res.status(400).json({ error: "Title is required" })
-    }
-    const newTodo = { id: todos.length + 1, title, completed: false }
-    todos.push(newTodo)
-    res.status(201).json(newTodo)
-});
-
-//UPDATE/PUT TASK
-app.put("/todos/:id", (req, res) =>{
-    const{ id } = req.params
-    const {title, completed} = req.body
-
-    const todo = todos.find((todo) => todo.id === parseInt(id))
-
-    if(!todo){
-        return res.status(404).json ({ error: "not found"})
-    }
-
-    if (title !== undefined ){
-        todo.title = title
-    }
-
-    if(completed !== undefined){
-        todo.complete = completed;
-    }
-
-    req.json(todo)
-})
-
-//DELETE
-app.delete("/todos/:id", (req, res) => {
-    const { id } = req.params
-
-    const index = todos.findIndex((todo) => todo.id === parseInt(id))
-    if (index === -1) {
-        return res.status(404).json({ error: "Task not found" })
-    }
-
-    todos.splice(index, 1)
-    res.status(204).send() //IF THERE IS NOTHING 
-});
+app.use("/todos", todoRoutes);
 
 //LETS GOO
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`)
+app.listen(process.env.PORT, () => {
+    console.log(`Server running at http://localhost:${process.env.PORT}`)
+    console.log(`Swagger Docs available at http://localhost:${process.env.PORT}/api-docs`);
 });
