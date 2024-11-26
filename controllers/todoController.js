@@ -1,76 +1,132 @@
+const admin = require("../firebase");
 const Todo = require("../models/todoModel");
 
-//get all the todos
+
 exports.getTodos = async (req, res) => {
     try {
-        const todos = await Todo.find(); 
-        res.json(todos);
+        if (process.env.TYPE === "multi") {
+            const userId = req.user.uid; 
+
+            const todos = await Todo.find({ userId });
+            res.status(200).json(todos);
+        } else {
+            const todos = await Todo.find();
+            res.status(200).json(todos);
+        }
     } catch (error) {
-        res.status(500).json({ error: "Failed to fetch todos" });
+        console.error("Error retrieving todos:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
-// single todo with the id
-exports.getTodoById = async (req, res) => {
+exports.createTodo = async (req, res) => {
+    const { title } = req.body;
+
+    if (!title) {
+        return res.status(400).json({ error: "Title is required" });
+    }
     try {
-        const { id } = req.params;
+        if (process.env.TYPE === "multi") {
+            const userId = req.user.uid; 
+            const todo = new Todo({
+                title,
+                userId,
+            });
+
+            await todo.save();
+            res.status(201).json({ message: "Todo created successfully", todo });
+        } else {
+            const todo = new Todo({ title });
+            await todo.save();
+            res.status(201).json({ message: "Todo created successfully", todo });
+        }
+    } catch (error) {
+        console.error("Error creating todo:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+
+exports.getTodoById = async (req, res) => {
+    const { id } = req.params;
+
+    try {
         const todo = await Todo.findById(id);
+
         if (!todo) {
             return res.status(404).json({ error: "Todo not found" });
         }
-        res.json(todo);
-    } catch (error) {
-        res.status(500).json({ error: "Failed to fetch the todo" });
-    }
-};
 
-// post a todo
-exports.createTodo = async (req, res) => {
-    try {
-        const { title } = req.body;
-        if (!title) {
-            return res.status(400).json({ error: "Title is required" });
+        if (process.env.TYPE === "multi") {
+            const userId = req.user.uid; 
+
+            if (todo.userId !== userId) {
+                return res.status(403).json({ error: "Unauthorized to access this todo" });
+            }
         }
-        const newTodo = new Todo({ title });
-        await newTodo.save();
-        res.status(201).json(newTodo);
+        res.status(200).json(todo);
     } catch (error) {
-        res.status(500).json({ error: "Failed to create todo" });
+        console.error("Error retrieving todo by ID:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
-// update the todo
+
 exports.updateTodo = async (req, res) => {
+    const { id } = req.params;
+    const { title, completed } = req.body;
+
     try {
-        const { id } = req.params;
-        const { title, completed } = req.body;
+        const todo = await Todo.findById(id);
 
-        const updatedTodo = await Todo.findByIdAndUpdate(
-            id,
-            { title, completed },
-            { new: true } 
-        );
-
-        if (!updatedTodo) {
+        if (!todo) {
             return res.status(404).json({ error: "Todo not found" });
         }
-        res.json(updatedTodo);
+
+        if (process.env.TYPE === "multi") {
+            const userId = req.user.uid; // Use user ID from the middleware
+
+            if (todo.userId !== userId) {
+                return res.status(403).json({ error: "Unauthorized to update this todo" });
+            }
+        }
+
+        if (title !== undefined) todo.title = title;
+        if (completed !== undefined) todo.completed = completed;
+
+        await todo.save();
+
+        res.status(200).json({ message: "Todo updated successfully", todo });
     } catch (error) {
-        res.status(500).json({ error: "Failed to update todo" });
+        console.error("Error updating todo:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
-// Delete the todo
 exports.deleteTodo = async (req, res) => {
-    try {
-        const { id } = req.params;
+    const { id } = req.params;
 
-        const deletedTodo = await Todo.findByIdAndDelete(id);
-        if (!deletedTodo) {
+    try {
+        const todo = await Todo.findById(id);
+
+        if (!todo) {
             return res.status(404).json({ error: "Todo not found" });
         }
-        res.status(204).send();
+
+        if (process.env.TYPE === "multi") {
+            const userId = req.user.uid; 
+
+            if (todo.userId !== userId) {
+                return res.status(403).json({ error: "Unauthorized to delete this todo" });
+            }
+        }
+
+        await Todo.findByIdAndDelete(id);
+
+        res.status(200).json({ message: "Todo deleted successfully" });
     } catch (error) {
-        res.status(500).json({ error: "Failed to delete todo" });
+        console.error("Error deleting todo:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 };
+

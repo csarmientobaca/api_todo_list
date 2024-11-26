@@ -5,10 +5,13 @@ const cors = require("cors")
 const bodyParser = require("body-parser")
 const app = express()
 const todoRoutes = require("./routes/todoRoutes");
+//firebase routes
+const authfirebaseRoutes = require("./routes/authfirebaseRoute.js");
 
 //swagger docs
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger.json");
+
 
 app.use(cors()); 
 app.use(bodyParser.json());
@@ -28,6 +31,7 @@ const connectDB = async () => {
 };
 connectDB();
 
+app.use("/auth", authfirebaseRoutes); 
 app.use("/todos", todoRoutes);
 
 //LETS GOO

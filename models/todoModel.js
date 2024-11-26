@@ -7,7 +7,10 @@ const todoSchema = new mongoose.Schema(
             required: true }, 
         completed: { 
             type: Boolean, 
-            default: false },  
+            default: false },
+        userId: { type: String, required: function () {
+                return process.env.TYPE === "multi";
+            }},  
     }, 
     { 
         timestamps: true });
