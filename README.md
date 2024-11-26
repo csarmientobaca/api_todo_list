@@ -22,6 +22,15 @@ A simple Todo List application built with **Node.js** (backend) and **React.js**
    ```bash
    git clone https://github.com/csarmientobaca/api_todo_list.git
    cd api_todo_list
+   npm install
+
+2. **Install react npm**
+   ```bash
+   cd client
+   npm install
+
+2. **Install react packages**
+   create a .env in the backend and in the frontend
 
 
 # MongoDB Credentials
@@ -46,3 +55,13 @@ FIREBASE_SERVICE_ACCOUNT={
     "client_email": "firebase-adminsdk@example.iam.gserviceaccount.com",
     ...
 }
+
+# Frontend .env
+
+REACT_APP_FIREBASE_API_KEY=your-firebase-api-key
+REACT_APP_FIREBASE_AUTH_DOMAIN=your-auth-domain
+REACT_APP_FIREBASE_PROJECT_ID=your-project-id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your-storage-bucket
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
+REACT_APP_FIREBASE_APP_ID=your-app-id
+REACT_APP_API_URL=http://localhost:5000
