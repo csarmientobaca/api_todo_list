@@ -56,6 +56,9 @@ FIREBASE_SERVICE_ACCOUNT={
     ...
 }
 
+# Application Configurations
+add in the backend the firebaseservice.json too
+
 # Frontend .env
 
 REACT_APP_FIREBASE_API_KEY=your-firebase-api-key
@@ -65,3 +68,5 @@ REACT_APP_FIREBASE_STORAGE_BUCKET=your-storage-bucket
 REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
 REACT_APP_FIREBASE_APP_ID=your-app-id
 REACT_APP_API_URL=http://localhost:5000
+
+
