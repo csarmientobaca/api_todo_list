@@ -6,7 +6,7 @@ A simple Todo List application built with **Node.js** (backend) and **React.js**
 
 ## Features
 
-- User Registration and Login with Firebase Authentication
+- User Registration and Login with Firebase Authentication.
 - View, Create, Update, and Delete Todos.
 - Multi-user mode associates todos with authenticated users.
 - Personal mode allows todos without authentication.
