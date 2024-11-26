@@ -23,7 +23,7 @@ function App() {
             setIdToken(token);
             console.log("ID Token:", token);
 
-            const response = await fetch("http://localhost:5000/todos/all", {
+            const response = await fetch(`http://localhost:${process.env.REACT_APP_API_URL}/todos/all`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,
